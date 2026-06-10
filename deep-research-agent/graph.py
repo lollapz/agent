@@ -1,4 +1,4 @@
-"""LangGraph StateGraph —— 竞品情报 Research Agent 核心图
+"""LangGraph StateGraph —— 智能调研 Research Agent 核心图
 
 工作流（v2 — Research Agent 循环）：
   discover → scrape → compare → review
@@ -57,14 +57,14 @@ class CompetitorState(TypedDict):
 
 
 # ═══════════════════════════════════════════════════════════════
-#  Node 1: 竞品发现（discover_node）— Tavily Search
+#  Node 1: 信息发现（discover_node）— Tavily Search
 #  支持两种模式：首轮搜索 / 补充搜索
 # ═══════════════════════════════════════════════════════════════
 
 def discover_node(state: CompetitorState) -> dict:
     """
-    竞品发现节点：
-    - 首轮：根据用户输入搜索 3 个竞品 URL
+    信息发现节点：
+    - 首轮：根据用户输入搜索 3 个资料 URL
     - 补充轮：使用 search_queries 搜索更多 URL
     避免重复，总量上限 10
     """
@@ -135,13 +135,13 @@ def discover_node(state: CompetitorState) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
-#  Node 2: 网页爬取（scrape_node）— Firecrawl
+#  Node 2: 网页抓取（scrape_node）— Firecrawl
 #  只抓取未访问 URL，失败不中断，保留已成功数据
 # ═══════════════════════════════════════════════════════════════
 
 def scrape_node(state: CompetitorState) -> dict:
     """
-    网页爬取节点：
+    网页抓取节点：
     - 只抓取 competitor_urls 中不在 visited_urls 的 URL
     - 单个 URL 失败记录 error 但继续
     - 追加新数据到已有 competitor_data
@@ -239,19 +239,19 @@ def scrape_node(state: CompetitorState) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
-#  Node 3: 数据对比（compare_node）— 多轮累积验证
+#  Node 3: 数据汇聚（compare_node）— 多轮累积验证
 # ═══════════════════════════════════════════════════════════════
 
 def compare_node(state: CompetitorState) -> dict:
     """
-    数据对比节点：
+    数据汇聚节点：
     - 验证多轮累积后的 competitor_data 是否非空
     - 不覆盖数据，仅做 gate
     """
     competitor_data = state.get("competitor_data", [])
 
     if not competitor_data:
-        return {"error": "无竞品数据可对比"}
+        return {"error": "无调研数据可汇聚"}
 
     return {}
 
@@ -291,8 +291,8 @@ QUERY_TEMPLATES = {
 def review_node(state: CompetitorState) -> dict:
     """
     Review 节点：
-    1. 逐竞品检查 9 个核心字段是否有效
-    2. 判断数据充分性（≥60% 竞品数据完整即视为充分）
+    1. 逐条检查 9 个核心字段是否有效
+    2. 判断数据充分性（≥60% 数据完整即视为充分）
     3. 生成 missing_info 和 search_queries
     """
 
@@ -317,13 +317,13 @@ def review_node(state: CompetitorState) -> dict:
                 "total_competitors": 0,
                 "sufficient_count": 0,
                 "is_sufficient": False,
-                "missing_info": ["无竞品数据"],
+                "missing_info": ["无调研数据"],
                 "next_queries": [],
                 "per_competitor": [],
             },
-            "missing_info": ["无竞品数据"],
+            "missing_info": ["无调研数据"],
             "search_queries": [],
-            "error": "无竞品数据可供审查",
+            "error": "无调研数据可供审查",
         }
 
     # 逐竞品检查
@@ -350,7 +350,7 @@ def review_node(state: CompetitorState) -> dict:
         })
 
     total = len(competitor_data)
-    # ≥60% 竞品数据充分 → 整体充分
+    # ≥60% 数据充分 → 整体充分
     is_sufficient = (sufficient_count / total) >= 0.6 if total > 0 else False
 
     missing_info = list(all_missing_fields)
@@ -443,7 +443,7 @@ def route_after_review(state: CompetitorState) -> str:
 def analyze_node(state: CompetitorState) -> dict:
     """
     AI 分析节点：
-    输入累积竞品数据 + review 结果，由 DeepSeek 生成 Markdown 战略分析报告。
+    输入累积调研数据 + review 结果，由 DeepSeek 生成 Markdown 调研报告。
     报告中标注数据不足项。
     """
     competitor_data = state.get("competitor_data", [])
@@ -452,7 +452,7 @@ def analyze_node(state: CompetitorState) -> dict:
     deepseek_api_key = _graph_config.get("deepseek_api_key", "")
 
     if not competitor_data:
-        return {"analysis_report": "", "error": "无竞品数据可分析"}
+        return {"analysis_report": "", "error": "无调研数据可分析"}
 
     try:
         formatted_data = json.dumps(competitor_data, indent=2, ensure_ascii=False)
@@ -470,31 +470,31 @@ def analyze_node(state: CompetitorState) -> dict:
             temperature=0.3,
         )
 
-        prompt = f"""Analyze the following competitor data in JSON format and generate a strategic competitive intelligence report in Markdown:
+        prompt = f"""Analyze the following research data in JSON format and generate a comprehensive research report in Markdown:
 
 {formatted_data}
 {missing_note}
 
 # Report Structure
 
-## 1. 竞品概览
-- 逐一介绍每家竞品公司（名称、网站、核心产品描述）
+## 1. 调研对象概览
+- 逐一介绍每个调研对象（名称、URL、核心描述）
 
 ## 2. 功能对比
-- 用表格对比各竞品的核心功能、技术栈
+- 用表格对比各对象的核心功能、技术栈
 
-## 3. 价格策略
-- 对比定价模式、免费/付费方案、价格层级
+## 3. 策略分析
+- 对比定价/定位模式、方案层级
 
-## 4. 用户定位
-- 分析各竞品的目标客户群体和市场定位
+## 4. 目标受众
+- 分析各对象的目标用户/客户群体和市场定位
 
 ## 5. 优势劣势
-- 列出每家竞品的竞争优势和改进空间
+- 列出每个对象的竞争优势和改进空间
 
-## 6. 市场机会与建议
-- 基于竞品分析，发现市场空白和差异化机会
-- 为目标公司提供产品开发和市场进入策略建议
+## 6. 洞察与建议
+- 基于调研数据，发现关键趋势和差异化机会
+- 提供可执行的策略建议
 
 ## 7. 数据完整性说明（如有缺失）
 - 列出本次分析中数据不足的字段，并说明影响范围

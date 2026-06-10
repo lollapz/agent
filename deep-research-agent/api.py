@@ -1,4 +1,4 @@
-"""FastAPI 服务 —— 竞品情报分析 Agent API
+"""FastAPI 服务 —— 智能调研报告生成 Agent API
 
 启动时从环境变量加载 API Keys，编译 LangGraph StateGraph 一次。
 提供同步风格的 /api/v1/research 端点，内部使用 asyncio.to_thread 异步执行。
@@ -19,15 +19,15 @@ from graph import build_graph, set_graph_config
 # ---- Pydantic 模型 ----
 
 class ResearchRequest(BaseModel):
-    """竞品分析请求"""
+    """调研分析请求"""
     company_url: Optional[str] = Field(
         default=None,
-        description="公司官网 URL",
+        description="目标网站 URL",
         examples=["https://example.com"],
     )
     company_description: Optional[str] = Field(
         default=None,
-        description="公司业务描述",
+        description="调研主题描述",
         examples=["AI-powered email marketing platform"],
     )
     max_iterations: Optional[int] = Field(
@@ -39,19 +39,19 @@ class ResearchRequest(BaseModel):
 
 
 class ResearchResponse(BaseModel):
-    """竞品分析响应"""
+    """调研分析响应"""
     status: str = Field(description="执行状态：success 或 error")
     analysis_report: str = Field(
         default="",
-        description="AI 生成的 Markdown 战略分析报告",
+        description="AI 生成的 Markdown 调研报告",
     )
     competitor_urls: list[str] = Field(
         default_factory=list,
-        description="发现的竞品 URL 列表",
+        description="发现的资料 URL 列表",
     )
     competitor_data: list[dict] = Field(
         default_factory=list,
-        description="结构化竞品数据",
+        description="结构化调研数据",
     )
     iteration_count: int = Field(
         default=0,
@@ -118,8 +118,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Competitor Intelligence Agent API",
-    description="基于 LangGraph + DeepSeek + Tavily + Firecrawl 的竞品情报分析 API",
+    title="Deep Research Agent API",
+    description="基于 LangGraph + DeepSeek + Tavily + Firecrawl 的智能调研报告生成 API",
     version="0.1.0",
     lifespan=lifespan,
 )
@@ -135,7 +135,7 @@ async def health_check():
 
 @app.post("/api/v1/research", response_model=ResearchResponse)
 async def research(request: ResearchRequest):
-    """启动竞品情报分析。
+    """启动智能调研分析。
 
     Research Agent 流水线:
     discover -> scrape -> compare -> review -> [analyze | prepare_next_search loop]
@@ -181,7 +181,7 @@ async def research(request: ResearchRequest):
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"分析执行失败: {str(e)}",
+            detail=f"调研执行失败: {str(e)}",
         )
 
 

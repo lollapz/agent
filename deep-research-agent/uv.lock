@@ -344,7 +344,7 @@ wheels = [
 ]
 
 [[package]]
-name = "competitor-intel-agent"
+name = "deep-research-agent"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

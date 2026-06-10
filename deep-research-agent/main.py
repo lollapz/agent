@@ -1,4 +1,4 @@
-"""Streamlit 入口 —— 竞品情报分析 Agent UI
+"""Streamlit 入口 —— 智能调研报告生成 Agent UI
 
 基于 LangGraph StateGraph，Research Agent 循环：
   discover → scrape → compare → review
@@ -20,7 +20,7 @@ load_dotenv()
 
 # ── 页面配置 ──
 st.set_page_config(
-    page_title="Competitor Intel Agent | LangGraph + DeepSeek",
+    page_title="Deep Research Agent | LangGraph + DeepSeek",
     page_icon="🔍",
     layout="wide"
 )
@@ -58,34 +58,34 @@ firecrawl_api_key = st.sidebar.text_input(
 #  主界面
 # ═══════════════════════════════════════════════════════════════
 
-st.title("🔍 Competitor Intel Agent")
+st.title("🔍 Deep Research Agent")
 st.caption("LangGraph + DeepSeek + Tavily + Firecrawl — Research Agent 循环模式")
 
 st.info(
     """
-    **工作流：竞品发现 → 网页爬取 → 数据对比 → 数据审查**
-    - 数据充分 → AI 战略分析报告
+    **工作流：信息发现 → 网页抓取 → 数据汇聚 → 数据审查**
+    - 数据充分 → AI 调研报告生成
     - 数据不足 → 自动补充搜索（最多 2 轮），再进入分析
     """
 )
-st.success("💡 建议同时提供 URL 和 5-6 字公司描述，效果最佳")
+st.success("💡 同时提供 URL 和调研主题描述，效果最佳")
 
 # 输入区域
 col1, col2 = st.columns(2)
 with col1:
-    url = st.text_input("公司 URL", placeholder="https://example.com")
+    url = st.text_input("目标 URL", placeholder="https://example.com")
 with col2:
-    description = st.text_area("公司描述", placeholder="简要描述公司业务，用于搜索竞品", height=68)
+    description = st.text_area("调研主题描述", placeholder="描述调研主题或业务，用于联网搜索", height=68)
 
 
 # ═══════════════════════════════════════════════════════════════
 #  分析按钮 + Graph 执行
 # ═══════════════════════════════════════════════════════════════
 
-if st.button("🚀 开始分析", type="primary", use_container_width=True):
+if st.button("🚀 开始调研", type="primary", use_container_width=True):
     # ── 输入校验 ──
     if not url and not description:
-        st.error("请提供公司 URL 或描述")
+        st.error("请提供目标 URL 或调研主题描述")
         st.stop()
 
     # ── API Key 校验 ──
@@ -129,7 +129,7 @@ if st.button("🚀 开始分析", type="primary", use_container_width=True):
     }
 
     # ── 执行 Graph ──
-    with st.spinner("🔍 正在执行竞品情报分析流水线（含补充搜索循环）..."):
+    with st.spinner("🔍 正在执行智能调研流水线（含补充搜索循环）..."):
         result = app.invoke(initial_state)
 
     # ── 错误处理 ──
@@ -185,14 +185,14 @@ if st.button("🚀 开始分析", type="primary", use_container_width=True):
     # ── 展示：竞品 URL ──
     competitor_urls = result.get("competitor_urls", [])
     if competitor_urls:
-        with st.expander(f"📌 发现 {len(competitor_urls)} 个竞品/资料 URL", expanded=True):
+        with st.expander(f"📌 发现 {len(competitor_urls)} 个资料 URL", expanded=True):
             for i, u in enumerate(competitor_urls, 1):
                 st.write(f"{i}. [{u}]({u})")
 
     # ── 展示：竞品对比表格 ──
     competitor_data = result.get("competitor_data", [])
     if competitor_data:
-        st.subheader("📊 竞品对比")
+        st.subheader("📊 信息对比")
 
         table_data = []
         for comp in competitor_data:
@@ -218,11 +218,11 @@ if st.button("🚀 开始分析", type="primary", use_container_width=True):
     # ── 展示：AI 分析报告 ──
     analysis_report = result.get("analysis_report", "")
     if analysis_report:
-        st.subheader("📝 AI 战略分析报告")
+        st.subheader("📝 AI 调研报告")
         st.markdown(analysis_report)
 
     if analysis_report:
-        st.success("✅ 分析完成！")
+        st.success("✅ 调研完成！")
         st.balloons()
 
 

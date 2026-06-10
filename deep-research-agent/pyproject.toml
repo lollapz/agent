@@ -1,7 +1,7 @@
 [project]
-name = "competitor-intel-agent"
+name = "deep-research-agent"
 version = "0.1.0"
-description = "基于 LangGraph + DeepSeek + Tavily + Firecrawl 的竞品情报分析 Agent"
+description = "基于 LangGraph + DeepSeek + Tavily + Firecrawl 的智能调研报告生成 Agent"
 requires-python = ">=3.11"
 dependencies = [
     "langgraph",
