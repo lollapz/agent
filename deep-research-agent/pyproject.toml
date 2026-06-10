@@ -1,0 +1,28 @@
+[project]
+name = "competitor-intel-agent"
+version = "0.1.0"
+description = "基于 LangGraph + DeepSeek + Tavily + Firecrawl 的竞品情报分析 Agent"
+requires-python = ">=3.11"
+dependencies = [
+    "langgraph",
+    "langchain-openai",
+    "langchain-core",
+    "tavily-python",
+    "firecrawl-py",
+    "streamlit>=1.41.0",
+    "pandas",
+    "pydantic",
+    "python-dotenv",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.34.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = []
+
+[tool.uv]
+package = false
