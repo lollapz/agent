@@ -1,8 +1,24 @@
-# 智能调研报告生成 Agent（Deep Research Agent）
+# 智能调研报告生成Agent
+# Deep Research Agent based on LangGraph
 
 基于 **LangGraph + DeepSeek + Tavily + Firecrawl** 构建的 Deep Research Agent，支持用户输入调研主题、公司 URL 或业务描述，自动完成需求解析、联网搜索、网页抓取、多源信息整合、数据充分性审查、补充检索以及结构化调研报告生成。
 
 > 竞品分析 / 行业调研 / 技术调研 / 市场研究 均可作为应用场景，不再仅限于竞品分析。
+
+## 项目价值
+
+传统搜索只能返回离散信息，本项目基于 LangGraph 构建可循环执行的 Research Agent Workflow，实现需求解析、联网搜索、网页抓取、数据验证、补充检索与结构化报告生成全流程自动化，提高调研效率与信息完整性。
+
+## 核心亮点
+
+- 基于 **LangGraph** 构建可循环执行的 Research Agent Workflow
+- 支持 **Conditional Edge** 条件路由与状态驱动决策
+- 集成 **Tavily + Firecrawl** 实现联网搜索与网页抓取
+- 引入 **Review** 机制自动评估数据充分性
+- 支持自动补充搜索与多轮信息累积
+- 基于 **DeepSeek** 自动生成结构化调研报告
+- 支持 **visited_urls** 去重与失败重试机制
+- 支持调研主题、企业分析、行业研究、竞品分析等场景
 
 ## 核心能力
 
@@ -66,7 +82,7 @@ LangGraph 条件边：route_after_review
 | 网页抓取 | Firecrawl (extract + Pydantic Schema) |
 | 数据建模 | Pydantic |
 | 数据分析 | Pandas |
-| 前端 | Streamlit + FastAPI |
+| 前端 | FastAPI + Streamlit |
 | 环境管理 | uv |
 
 ## 快速启动
